@@ -7,7 +7,6 @@ c_initial = 10  # Начальное значение сцепления (кПа
 phi_initial = 30  # Начальное значение угла внутреннего трения (градусы)
 plane_constant_initial = 100  # Начальное значение для плоскости
 
-
 # Универсальная функция для вычисления sigma3 или sigma2 через sigma1 (или наоборот)
 def edge(sigma, c, phi, mode):
     if mode == "12>3":
@@ -22,7 +21,6 @@ def edge(sigma, c, phi, mode):
         return sigma - (2 * c * np.cos(phi) + 2 * sigma * np.sin(phi)) / (1 + np.sin(phi))
     elif mode == "23<1":
         return sigma + (2 * c * np.cos(phi) + 2 * sigma * np.sin(phi)) / (1 - np.sin(phi))
-
 
 # Функция для нахождения пересечения ребра с плоскостью
 def find_intersection(edge_func, sigma_range, plane_constant, vertex, axis, c, phi, mode):
@@ -47,7 +45,6 @@ def find_intersection(edge_func, sigma_range, plane_constant, vertex, axis, c, p
             return np.array([sigma1[idx], sigma_values[idx], sigma_values[idx]])
     return None
 
-
 # Функция для обновления графика
 def update(c, phi, plane_constant, camera_state=None):
     phi_rad = np.radians(phi)
@@ -61,6 +58,7 @@ def update(c, phi, plane_constant, camera_state=None):
         find_intersection(edge, np.linspace(sigma_vertex, 100, 1000), plane_constant, vertex, 2, c, phi_rad, "13<2"),
         find_intersection(edge, np.linspace(sigma_vertex, 100, 1000), plane_constant, vertex, 3, c, phi_rad, "23<1")
     ]
+    valid_intersections = [i for i in intersections if i is not None]
     fig = go.Figure()
 
     # Рисуем ребра
@@ -123,7 +121,6 @@ def update(c, phi, plane_constant, camera_state=None):
         x = [point[0] for point in all_points]
         y = [point[1] for point in all_points]
         z = [point[2] for point in all_points]
-        # Индексы для граней
         i = [0, 0, 0, 0, 0, 0]  # Вершина пирамиды
         j = [5, 1, 6, 2, 4, 3]  # Первая точка грани
         k = [1, 6, 2, 4, 3, 5]  # Вторая точка грани
@@ -148,12 +145,11 @@ def update(c, phi, plane_constant, camera_state=None):
         margin=dict(l=0, r=0, b=0, t=30)
     )
 
-    # Сохраняем текущее состояние камеры
+    # Применяем состояние камеры
     if camera_state:
         fig.update_layout(scene_camera=camera_state)
 
     return fig
-
 
 # Создаем слайдеры в Streamlit
 c = st.slider('Удельное сцепление (кПа)', 0, 40, c_initial, key='c_slider')
@@ -164,9 +160,15 @@ plane_constant = st.slider('Девиаторная плоскость (σ₁ + �
 if 'camera_state' not in st.session_state:
     st.session_state['camera_state'] = dict(eye=dict(x=1.5, y=1.5, z=1.5))
 
-# Обновляем и отображаем график
-fig = update(c, phi, plane_constant, camera_state=st.session_state['camera_state'])
-st.plotly_chart(fig)
+try:
+    # Обновляем и отображаем график
+    fig = update(c, phi, plane_constant, camera_state=st.session_state.get('camera_state', None))
+    st.plotly_chart(fig)
 
-# Сохраняем новое состояние камеры при взаимодействии с графиком
-st.session_state['camera_state'] = fig.layout.scene.camera
+    # Сохраняем новое состояние камеры при взаимодействии с графиком
+    if fig.layout.scene.camera:  # Проверяем, что камера существует
+        st.session_state['camera_state'] = fig.layout.scene.camera
+
+except Exception as e:
+    st.error(f"Произошла ошибка: {e}")
+    st.session_state['camera_state'] = dict(eye=dict(x=1.5, y=1.5, z=1.5))  # Сброс камеры к начальному положению
