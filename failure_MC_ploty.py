@@ -1,25 +1,5 @@
 import streamlit as st
 import math
-import matplotlib.pyplot as plt
-import numpy as np
-
-@st.cache_data
-def plot_coulomb_law(c, phi_rad):
-    # Диапазон нормальных напряжений (σ)
-    sigma = np.linspace(0, 10, 100)  # от 0 до 10 МПа
-    # Касательное напряжение (τ) по закону Кулона
-    tau = c + sigma * math.tan(phi_rad)
-    
-    # Построение графика
-    fig, ax = plt.subplots(figsize=(8, 6))
-    ax.plot(sigma, tau, label=r"$\tau = c + \sigma \cdot \tan(\phi)$", color="blue")
-    ax.set_title("Закон Кулона")
-    ax.set_xlabel(r"Нормальное напряжение $\sigma$, МПа")
-    ax.set_ylabel(r"Касательное напряжение $\tau$, МПа")
-    ax.grid(True)
-    ax.legend()
-    
-    return fig
 
 def calculate_parameters(material, fc, ft):
     if fc <= 0 or ft <= 0:
@@ -56,12 +36,6 @@ def calculate_parameters(material, fc, ft):
     text_placeholder = st.empty()
     with text_placeholder:
         st.success(result_text)
-    
-    # Построение графика закона Кулона
-    fig = plot_coulomb_law(c, phi_rad)
-    chart_placeholder = st.empty()
-    with chart_placeholder:
-        st.pyplot(fig)
 
 # Создание пользовательского интерфейса в Streamlit
 st.title("Расчет параметров Мора-Кулона")
