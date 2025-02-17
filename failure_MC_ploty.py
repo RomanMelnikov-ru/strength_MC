@@ -1,5 +1,6 @@
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 
 # Функция для создания графика с осями
 def create_axes():
@@ -43,6 +44,9 @@ def create_axes():
 
     return fig
 
-# Создаем и отображаем график в Streamlit
+# Создаем график
 fig = create_axes()
-st.plotly_chart(fig, key="axes_plot")
+
+# Преобразуем график в HTML и отображаем его через st.components.v1.html
+html_code = fig.to_html(full_html=False)
+components.html(html_code, height=600, scrolling=False)
