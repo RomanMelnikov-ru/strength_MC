@@ -33,7 +33,11 @@ def calculate_parameters(material, fc, ft):
         f"- Учитывайте, что параметры прочности могут изменяться в зависимости от условий эксплуатации (влажность, температура, длительные нагрузки).\n"
         f"- Для точных расчетов (например, для ответственных конструкций) рекомендуется проводить экспериментальные испытания."
     )
-    st.success(result_text)
+    
+    # Используйте st.empty() для управления выводом текста
+    text_placeholder = st.empty()
+    with text_placeholder:
+        st.success(result_text)
     
     # Построение графика закона Кулона
     plot_coulomb_law(c, phi_rad)
@@ -53,8 +57,10 @@ def plot_coulomb_law(c, phi_rad):
     ax.grid(True)
     ax.legend()
     
-    # Отображение графика в Streamlit
-    st.pyplot(fig)
+    # Используйте st.empty() для управления отрисовкой графика
+    placeholder = st.empty()
+    with placeholder:
+        st.pyplot(fig)
 
 # Создание пользовательского интерфейса в Streamlit
 st.title("Расчет параметров Мора-Кулона")
