@@ -60,6 +60,11 @@ def update(c, phi, plane_constant):
     ]
     fig = go.Figure()
 
+    # Проверка пересечений
+    valid_intersections = [i for i in intersections if i is not None]
+    if len(valid_intersections) < 6:
+        st.warning("Некоторые пересечения не были найдены. График может быть неполным.")
+
     # Рисуем ребра
     colors = ['red', 'red', 'red', 'red', 'red', 'red']
     for i, (intersection, color) in enumerate(zip(intersections, colors)):
@@ -154,4 +159,4 @@ plane_constant = st.slider('Девиаторная плоскость (σ₁ + �
 
 # Обновляем и отображаем график
 fig = update(c, phi, plane_constant)
-st.plotly_chart(fig)
+st.plotly_chart(fig, key=f"plotly_chart_{c}_{phi}_{plane_constant}")
