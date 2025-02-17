@@ -46,7 +46,7 @@ def find_intersection(edge_func, sigma_range, plane_constant, vertex, axis, c, p
     return None
 
 # Функция для обновления графика
-def update(c, phi, plane_constant, camera_state=None):
+def update(c, phi, plane_constant):
     phi_rad = np.radians(phi)
     sigma_vertex = -c / np.tan(phi_rad)
     vertex = np.array([sigma_vertex, sigma_vertex, sigma_vertex])
@@ -58,7 +58,6 @@ def update(c, phi, plane_constant, camera_state=None):
         find_intersection(edge, np.linspace(sigma_vertex, 100, 1000), plane_constant, vertex, 2, c, phi_rad, "13<2"),
         find_intersection(edge, np.linspace(sigma_vertex, 100, 1000), plane_constant, vertex, 3, c, phi_rad, "23<1")
     ]
-    valid_intersections = [i for i in intersections if i is not None]
     fig = go.Figure()
 
     # Рисуем ребра
@@ -140,14 +139,11 @@ def update(c, phi, plane_constant, camera_state=None):
             xaxis_title='σ₂',
             yaxis_title='σ₃',
             zaxis_title='σ₁',
-            aspectmode="cube"
+            aspectmode="cube",
+            camera=dict(eye=dict(x=1.5, y=1.5, z=1.5))  # Фиксированная камера
         ),
         margin=dict(l=0, r=0, b=0, t=30)
     )
-
-    # Применяем состояние камеры
-    if camera_state:
-        fig.update_layout(scene_camera=camera_state)
 
     return fig
 
@@ -156,19 +152,6 @@ c = st.slider('Удельное сцепление (кПа)', 0, 40, c_initial, 
 phi = st.slider('Угол внутреннего трения (°)', 10, 30, phi_initial, key='phi_slider')
 plane_constant = st.slider('Девиаторная плоскость (σ₁ + σ₂ + σ₃)', 0, 200, plane_constant_initial, key='plane_slider')
 
-# Используем session state для сохранения состояния камеры
-if 'camera_state' not in st.session_state:
-    st.session_state['camera_state'] = dict(eye=dict(x=1.5, y=1.5, z=1.5))
-
-try:
-    # Обновляем и отображаем график
-    fig = update(c, phi, plane_constant, camera_state=st.session_state.get('camera_state', None))
-    st.plotly_chart(fig)
-
-    # Сохраняем новое состояние камеры при взаимодействии с графиком
-    if fig.layout.scene.camera:  # Проверяем, что камера существует
-        st.session_state['camera_state'] = fig.layout.scene.camera
-
-except Exception as e:
-    st.error(f"Произошла ошибка: {e}")
-    st.session_state['camera_state'] = dict(eye=dict(x=1.5, y=1.5, z=1.5))  # Сброс камеры к начальному положению
+# Обновляем и отображаем график
+fig = update(c, phi, plane_constant)
+st.plotly_chart(fig)
