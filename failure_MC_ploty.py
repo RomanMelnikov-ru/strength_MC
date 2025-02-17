@@ -3,6 +3,24 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 
+@st.cache_data
+def plot_coulomb_law(c, phi_rad):
+    # Диапазон нормальных напряжений (σ)
+    sigma = np.linspace(0, 10, 100)  # от 0 до 10 МПа
+    # Касательное напряжение (τ) по закону Кулона
+    tau = c + sigma * math.tan(phi_rad)
+    
+    # Построение графика
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.plot(sigma, tau, label=r"$\tau = c + \sigma \cdot \tan(\phi)$", color="blue")
+    ax.set_title("Закон Кулона")
+    ax.set_xlabel(r"Нормальное напряжение $\sigma$, МПа")
+    ax.set_ylabel(r"Касательное напряжение $\tau$, МПа")
+    ax.grid(True)
+    ax.legend()
+    
+    return fig
+
 def calculate_parameters(material, fc, ft):
     if fc <= 0 or ft <= 0:
         st.error("Прочность на сжатие и растяжение должны быть положительными числами.")
@@ -40,42 +58,25 @@ def calculate_parameters(material, fc, ft):
         st.success(result_text)
     
     # Построение графика закона Кулона
-    plot_coulomb_law(c, phi_rad)
-
-def plot_coulomb_law(c, phi_rad):
-    # Диапазон нормальных напряжений (σ)
-    sigma = np.linspace(0, 10, 100)  # от 0 до 10 МПа
-    # Касательное напряжение (τ) по закону Кулона
-    tau = c + sigma * math.tan(phi_rad)
-    
-    # Построение графика
-    fig, ax = plt.subplots(figsize=(8, 6))
-    ax.plot(sigma, tau, label=r"$\tau = c + \sigma \cdot \tan(\phi)$", color="blue")
-    ax.set_title("Закон Кулона")
-    ax.set_xlabel(r"Нормальное напряжение $\sigma$, МПа")
-    ax.set_ylabel(r"Касательное напряжение $\tau$, МПа")
-    ax.grid(True)
-    ax.legend()
-    
-    # Используйте st.empty() для управления отрисовкой графика
-    placeholder = st.empty()
-    with placeholder:
+    fig = plot_coulomb_law(c, phi_rad)
+    chart_placeholder = st.empty()
+    with chart_placeholder:
         st.pyplot(fig)
 
 # Создание пользовательского интерфейса в Streamlit
 st.title("Расчет параметров Мора-Кулона")
 
 # Выбор материала
-material = st.selectbox("Выберите материал:", ["Кирпичная кладка", "Бетон"])
+material = st.selectbox("Выберите материал:", ["Кирпичная кладка", "Бетон"], key="material_select")
 
 # Ввод прочности на сжатие (fc)
-fc = st.number_input("Прочность на сжатие (fc), МПа:", min_value=0.01, value=10.0, step=0.1)
+fc = st.number_input("Прочность на сжатие (fc), МПа:", min_value=0.01, value=10.0, step=0.1, key="fc_input")
 
 # Ввод прочности на растяжение (ft)
-ft = st.number_input("Прочность на растяжение (ft), МПа:", min_value=0.01, value=1.0, step=0.1)
+ft = st.number_input("Прочность на растяжение (ft), МПа:", min_value=0.01, value=1.0, step=0.1, key="ft_input")
 
 # Кнопка для расчета
-if st.button("Рассчитать"):
+if st.button("Рассчитать", key="calculate_button"):
     calculate_parameters(material, fc, ft)
 
 # Цитирование
